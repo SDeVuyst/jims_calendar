@@ -8,6 +8,6 @@ class Settings(BaseSettings):
     jims_password: str
 
     class Config:
-        env_file = ".env"
+        env_file = "stack.env"
 
 settings = Settings()
