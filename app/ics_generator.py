@@ -3,6 +3,7 @@ import re
 from datetime import datetime, timedelta
 
 import requests
+import uuid
 from ics import Calendar, Event
 
 from app.config import settings
@@ -11,15 +12,28 @@ from app.config import settings
 def generate_calendar():
     c = Calendar()
     
-    # Imagine you have session history as a list of dicts
-    sessions = fetch_checkins()  # or fetch from local DB/file
+    sessions = fetch_checkins()  # get your gym check-in data
+    
     for s in sessions:
         e = Event()
         e.name = "Gym 💪"
-        e.begin = re.sub(r"\[.*?\]", "", s["checkinTime"])
-        e.end = re.sub(r"\[.*?\]", "", s["checkoutTime"])
-        e.location = s["studioName"]
+        
+        # Clean timestamps
+        start_str = re.sub(r"\[.*?\]", "", s["checkinTime"]).strip()
+        end_str = re.sub(r"\[.*?\]", "", s["checkoutTime"]).strip()
+
+        # Convert strings to datetime objects
+        e.begin = datetime.fromisoformat(start_str)
+        e.end = datetime.fromisoformat(end_str)
+
+        # Add required fields
+        e.uid = str(uuid.uuid4()) + "@silasdevuyst.com"  # unique ID
+        e.created = re.sub(r"\[.*?\]", "", s["checkoutTime"]).strip()
+
+        # Optional fields
+        e.location = s.get("studioName", "Gym")
         e.description = "Auto-logged session"
+
         c.events.add(e)
 
     return str(c)
