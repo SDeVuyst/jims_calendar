@@ -27,8 +27,9 @@ def generate_calendar():
         e.end = datetime.fromisoformat(end_str)
 
         # Add required fields
-        e.uid = str(uuid.uuid4()) + "@silasdevuyst.com"  # unique ID
-        e.created = re.sub(r"\[.*?\]", "", s["checkoutTime"]).strip()
+        e.uid = str(uuid.uuid5(uuid.NAMESPACE_X500, start_str))  # unique ID
+        e.created = datetime.fromisoformat(start_str)
+        e.dtstamp = datetime.fromisoformat(start_str)
 
         # Optional fields
         e.location = s.get("studioName", "Gym")
@@ -36,7 +37,7 @@ def generate_calendar():
 
         c.events.add(e)
 
-    return str(c)
+    return c.serialize()
 
 
 USERNAME = settings.jims_email
