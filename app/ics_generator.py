@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 import requests
 import uuid
 from icalendar import Calendar, Event
+from zoneinfo import ZoneInfo
 
 from app.config import settings
 
@@ -23,14 +24,18 @@ def generate_calendar():
         # Clean timestamps
         start_str = re.sub(r"\[.*?\]", "", s["checkinTime"]).strip()
         end_str = re.sub(r"\[.*?\]", "", s["checkoutTime"]).strip()
+        
+        brussels = ZoneInfo("Europe/Brussels")
+        start_dt = datetime.fromisoformat(start_str).replace(tzinfo=brussels)
+        end_dt = datetime.fromisoformat(end_str).replace(tzinfo=brussels)
 
         # Convert strings to datetime objects
-        e.add('dtstart', datetime.fromisoformat(start_str))
-        e.add('dtstart', datetime.fromisoformat(end_str))
+        e.add('dtstart', start_dt)
+        e.add('dtend', end_dt)
 
         # Add required fields
         e.add("uid", str(uuid.uuid5(uuid.NAMESPACE_X500, start_str)))  # unique ID
-        e.add("dtstamp", datetime.fromisoformat(start_str))
+        e.add("dtstamp", start_dt)
 
         # Optional fields
         e.add("location", s.get("studioName", "Gym"))
