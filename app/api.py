@@ -15,4 +15,8 @@ async def get_gym_feed(request: Request):
         return Response(status_code=200, media_type="text/calendar")
 
     ics_data = generate_calendar()
-    return Response(content=ics_data, media_type="text/calendar")
+    return Response(
+        content=ics_data,
+        media_type="text/calendar; charset=utf-8",
+        headers={"Content-Disposition": 'inline; filename="gym.ics"'}
+    )
