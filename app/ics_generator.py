@@ -4,40 +4,41 @@ from datetime import datetime, timedelta
 
 import requests
 import uuid
-from ics import Calendar, Event
+from icalendar import Calendar, Event
 
 from app.config import settings
 
 
 def generate_calendar():
-    c = Calendar()
+    cal = Calendar()
+    cal.add('prodid', '-//Gym Calendar//EN')
+    cal.add('version', '2.0')
     
     sessions = fetch_checkins()  # get your gym check-in data
     
     for s in sessions:
         e = Event()
-        e.name = "Gym 💪"
+        e.add("summary", "Gym 💪")
         
         # Clean timestamps
         start_str = re.sub(r"\[.*?\]", "", s["checkinTime"]).strip()
         end_str = re.sub(r"\[.*?\]", "", s["checkoutTime"]).strip()
 
         # Convert strings to datetime objects
-        e.begin = datetime.fromisoformat(start_str)
-        e.end = datetime.fromisoformat(end_str)
+        e.add('dtstart', datetime.fromisoformat(start_str))
+        e.add('dtstart', datetime.fromisoformat(end_str))
 
         # Add required fields
-        e.uid = str(uuid.uuid5(uuid.NAMESPACE_X500, start_str))  # unique ID
-        e.created = datetime.fromisoformat(start_str)
-        e.dtstamp = datetime.fromisoformat(start_str)
+        e.add("uid", str(uuid.uuid5(uuid.NAMESPACE_X500, start_str)))  # unique ID
+        e.add("dtstamp", datetime.fromisoformat(start_str))
 
         # Optional fields
-        e.location = s.get("studioName", "Gym")
-        e.description = "Auto-logged session"
+        e.add("location", s.get("studioName", "Gym"))
+        e.add("description", "Auto-logged session")
 
-        c.events.add(e)
+        cal.add_component(e)
 
-    return c.serialize()
+    return cal.to_ical()
 
 
 USERNAME = settings.jims_email

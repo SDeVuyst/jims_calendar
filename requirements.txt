@@ -1,6 +1,6 @@
 fastapi
 uvicorn[standard]
-ics
+icalendar
 python-dotenv
 pydantic
 pydantic-settings
